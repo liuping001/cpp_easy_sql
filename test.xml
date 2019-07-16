@@ -1,27 +1,27 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<mapper namespace="test">
+<mapper namespace="vg_account">
     <!-- 查询 -->
     <GetUserInfoParam>
         <field name="name" type="string" ></field>
-        <field name="age" type="int32" ></field>
+        <field name="passwd" type="string" ></field>
         <field name="state_id" type="int32" ></field>
     </GetUserInfoParam>
     <GetUserInfoEntity>
-        <field name="id" type="uint64"></field>
+        <field name="user_id" type="uint64"></field>
         <field name="name" type="string"></field>
-        <field name="age" type="int32" ></field>
+        <field name="passwd" type="string" ></field>
         <field name="state_id" type="int32" ></field>
     </GetUserInfoEntity>
 
     <select id="GetUserInfo" param_type="GetUserInfoParam" result_type="GetUserInfoEntity">
-        select `id`,`name`,`age`,`state_id`
+        select `user_id`,`name`,`passwd`,`state_id`
         from `user_info`
         where 1 = 1
         <if test="!#{name}.empty()">
             and `name` = #{name}
         </if>
-        <if test="#{age} > 0">
-            and `age` = #{age}
+        <if test="!#{passwd}.empty()">
+            and `passwd` = #{passwd}
         </if>
         <if test="#{state_id} > 0">
             and `state_id` = #{state_id}
@@ -32,14 +32,14 @@
         <field name="name" type="array[string]"></field>
     </GetUserInfoByNameParam>
     <GetUserInfoByNameResult>
-        <field name="id" type="uint64"></field>
+        <field name="user_id" type="uint64"></field>
         <field name="name" type="string"></field>
-        <field name="age" type="int32" ></field>
+        <field name="passwd" type="string" ></field>
         <field name="state_id" type="int32" ></field>
     </GetUserInfoByNameResult>
     <select id="GetUserInfoByName" param_type="GetUserInfoByNameParam" result_type="GetUserInfoByNameResult">
         <if test="#{name}.size() > 0">
-            select `id`,`name`,`age`,`state_id`
+            select `user_id`,`name`,`passwd`,`state_id`
             from `user_info`
             where `name` in
             <foreach collection="#{name}" open="(" close =")" separator=","></foreach>
@@ -48,45 +48,40 @@
 
     <!-- update -->
     <UpdateUserInfoByIdParam>
-        <field name="name" type="string" ></field>
-        <field name="age" type="int32" ></field>
+        <field name="passwd" type="string" ></field>
         <field name="state_id" type="int32"></field>
-        <field name="id" type="uint64"></field>
+        <field name="name" type="string"></field>
     </UpdateUserInfoByIdParam>
 
     <update id="UpdateUserInfoById" param_type="UpdateUserInfoByIdParam">
         update `user_info`
-        set `id` = `id`
-        <if test="!#{name}.empty()">
-            ,`name` = #{name}
-        </if>
-        <if test="#{age} > 0">
-            ,`age` = #{age}
+        set `user_id` = `user_id`
+        <if test="!#{passwd}.empty()">
+            ,`passwd` = #{passwd}
         </if>
         <if test="#{state_id} > 0">
             ,`state_id` = #{state_id}
         </if>
-        where `id` = #{id}
+        where `name` = #{name}
     </update>
 
     <!-- insert -->
     <InsertUserParam>
         <field name="name" type="string" ></field>
-        <field name="age" type="int32" ></field>
+        <field name="passwd" type="string" ></field>
         <field name="state_id" type="int32" ></field>
-        <field name="id" type="uint64"></field>
     </InsertUserParam>
     <insert id="AddUser" param_type="InsertUserParam">
-        insert into `user_info` (`id`,`name`,`age`,`state_id`)
-        values(#{id}, #{name}, #{age}, #{state_id})
+        insert into `user_info` (`name`,`passwd`,`state_id`)
+        values(#{name}, #{passwd}, #{state_id})
     </insert>
 
     <DeleteUserParam>
-        <field name="id" type="uint64"></field>
+        <field name="user_id" type="uint64"></field>
     </DeleteUserParam>
     <delete id="DeleteUser" param_type="DeleteUserParam">
         delete from `user_info`
-        where `id` = #{id}
+        where `user_id` = #{user_id}
     </delete>
 
 </mapper>

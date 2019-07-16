@@ -102,8 +102,8 @@ def parse_condation(tag, level = 1):
             str += deal_text_to_sql(tag.data, "param.", head)
     return str
 
-def cpp_header_include(include):
-    return "#include<" + include + ">\n"
+def cpp_header_include(include, open="<", close=">"):
+    return "#include %s%s%s\n"%(open, include, close)
 def cpp_using_namespace(namespace):
     return "using namespace " + namespace + ";\n"
 
@@ -142,6 +142,7 @@ class ParseXml:
         self.include_header_string += cpp_header_include("string")
         self.include_header_string += cpp_header_include("sstream")
         self.include_header_string += cpp_header_include("vector")
+        self.include_header_string += cpp_header_include("sql_handler.h", "\"", "\"")
         self.include_header_string += cpp_using_namespace("std")
         # string to_string
         self.include_header_string += "inline std::string to_string(const std::string &s) {  return s; }\n"
@@ -182,9 +183,9 @@ class ParseXml:
 
         # 参数值
         if param_name == "":
-            self.make_result_func += " (SqlHander *sql_header)"
+            self.make_result_func += " (SqlHandler *sql_handler)"
         else:
-            self.make_result_func += " (SqlHander *sql_header, const " + param_name + " &param)"
+            self.make_result_func += " (SqlHandler *sql_handler, const " + param_name + " &param)"
         self.make_result_func += " {\n"
 
         head = "\t"
@@ -194,18 +195,18 @@ class ParseXml:
         #获取sql
         self.make_result_func += head + "auto sql = " + self.get_sql_func_name(item.getAttribute("id")) + "(param);\n"
         #执行sql
-        self.make_result_func += head + "sql_header->ExecuteSql(sql);\n"
+        self.make_result_func += head + "sql_handler->ExecuteSql(sql);\n"
 
         #不是sql这里就已经返回了
         if result_name == "":
-            self.make_result_func += head + "return sql_header->GetFetchSize();\n}\n"
+            self.make_result_func += head + "return sql_handler->GetFetchSize();\n}\n"
             return
 
-        self.make_result_func += head + "while(sql_header->Next()) {\n"
-        self.make_result_func += head + "\t ret.emplace_back();\n"
+        self.make_result_func += head + "while(sql_handler->Next()) {\n"
+        self.make_result_func += head + "\tret.emplace_back();\n"
         tag = self.root.getElementsByTagName(result_name)[0]
         for item in tag.getElementsByTagName("field"):
-            self.make_result_func += "\t\tret.back().%s = sql_header->Get%s(\"%s\");\n"%(item.getAttribute("name"),
+            self.make_result_func += "\t\tret.back().%s = sql_handler->Get%s(\"%s\");\n"%(item.getAttribute("name"),
                                      type_convert_sql_heander[item.getAttribute("type")], item.getAttribute("name"))
         self.make_result_func += head +"}\n"
         self.make_result_func += head + "return ret;\n}\n"

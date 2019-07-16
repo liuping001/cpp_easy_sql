@@ -1,3 +1,4 @@
+#pragma once
 #include <string>
 
 // 需要实现的接口
@@ -9,10 +10,10 @@ struct SqlHandler {
     virtual size_t GetRow() = 0;
 
     virtual bool GetBoolean(uint32_t column_index) const = 0;
-    virtual bool GetBoolean(const sql::string& column_label) const = 0;
+    virtual bool GetBoolean(const std::string& column_label) const = 0;
 
     virtual long double GetDouble(uint32_t column_index) const = 0;
-    virtual long double GetDouble(const sql::string& column_label) const = 0;
+    virtual long double GetDouble(const std::string& column_label) const = 0;
 
     virtual int32_t GetInt(uint32_t column_index) const = 0;
     virtual int32_t GetInt(const std::string& column_label) const = 0;
