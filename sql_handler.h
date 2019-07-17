@@ -3,7 +3,8 @@
 
 // 需要实现的接口
 struct SqlHandler {
-    virtual void ExecuteSql(const std::string &sql) = 0;
+    virtual void ExecuteQuery(const std::string &sql) = 0;
+    virtual int32_t ExecuteUpdate(const std::string &sql) = 0;
     virtual bool Next() = 0;
 
     virtual size_t GetFetchSize() = 0;

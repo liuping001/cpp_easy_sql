@@ -16,7 +16,7 @@ type_convert = {"int32":"int32_t",          "array[int32]":"std::vector<int32_t>
                 "bool":"bool",
                 }
 
-type_convert_sql_heander = {"int32":"Int", "uint32":"UInt",
+type_convert_sql_handler = {"int32":"Int", "uint32":"UInt",
                             "int64":"Int64", "uint64":"UInt64",
                             "string":"String", "double":"Double",
                             "bool":"Boolean"}
@@ -195,11 +195,13 @@ class ParseXml:
         #获取sql
         self.make_result_func += head + "auto sql = " + self.get_sql_func_name(item.getAttribute("id")) + "(param);\n"
         #执行sql
-        self.make_result_func += head + "sql_handler->ExecuteSql(sql);\n"
-
+        if result_name == "":
+            pass
+        else:
+            self.make_result_func += head + "sql_handler->ExecuteQuery(sql);\n"
         #不是sql这里就已经返回了
         if result_name == "":
-            self.make_result_func += head + "return sql_handler->GetFetchSize();\n}\n"
+            self.make_result_func += head + "return sql_handler->ExecuteUpdate(sql);\n}\n"
             return
 
         self.make_result_func += head + "while(sql_handler->Next()) {\n"
@@ -207,7 +209,7 @@ class ParseXml:
         tag = self.root.getElementsByTagName(result_name)[0]
         for item in tag.getElementsByTagName("field"):
             self.make_result_func += "\t\tret.back().%s = sql_handler->Get%s(\"%s\");\n"%(item.getAttribute("name"),
-                                     type_convert_sql_heander[item.getAttribute("type")], item.getAttribute("name"))
+                                     type_convert_sql_handler[item.getAttribute("type")], item.getAttribute("name"))
         self.make_result_func += head +"}\n"
         self.make_result_func += head + "return ret;\n}\n"
 
