@@ -183,9 +183,9 @@ class ParseXml:
 
         # 参数值
         if param_name == "":
-            self.make_result_func += " (SqlHandler *sql_handler)"
+            self.make_result_func += " (ColumnIndexSqlHandler *sql_handler)"
         else:
-            self.make_result_func += " (SqlHandler *sql_handler, const " + param_name + " &param)"
+            self.make_result_func += " (ColumnIndexSqlHandler *sql_handler, const " + param_name + " &param)"
         self.make_result_func += " {\n"
 
         head = "\t"

@@ -13,7 +13,7 @@
 
 #include "sql_handler.h"
 
-struct CppSql : public SqlHandler {
+struct CppSql : public ColumnLabelSqlHandler {
     void Init(std::unique_ptr<sql::Statement> _stmt) {
         stmt = std::move(_stmt);
     }
@@ -29,25 +29,18 @@ struct CppSql : public SqlHandler {
     virtual size_t GetFetchSize() { return res->getFetchSize(); }
     virtual size_t GetRow() { return res->rowsCount(); }
 
-    virtual bool GetBoolean(uint32_t column_index) const { return res->getBoolean(column_index); }
     virtual bool GetBoolean(const std::string& column_label) const { return res->getBoolean(column_label); }
 
-    virtual long double GetDouble(uint32_t column_index) const { return res->getDouble(column_index); }
     virtual long double GetDouble(const std::string& column_label) const { res->getDouble(column_label); }
 
-    virtual int32_t GetInt(uint32_t column_index) const { return res->getInt(column_index); }
     virtual int32_t GetInt(const std::string& column_label) const {return res->getInt(column_label);}
 
-    virtual uint32_t GetUInt(uint32_t column_index) const {return res->getUInt(column_index); }
     virtual uint32_t GetUInt(const std::string& column_label) const {return res->getUInt(column_label);}
 
-    virtual int64_t GetInt64(uint32_t column_index) const {return res->getInt64(column_index);}
     virtual int64_t GetInt64(const std::string& column_label) const {return res->getInt64(column_label);}
 
-    virtual uint64_t GetUInt64(uint32_t column_index) const {return res->getUInt64(column_index);}
     virtual uint64_t GetUInt64(const std::string& column_label) const {return res->getUInt64(column_label);}
 
-    virtual std::string GetString(uint32_t column_index)  const {return res->getString(column_index);}
     virtual std::string GetString(const std::string& column_label) const {return res->getString(column_label);}
 
     std::unique_ptr<sql::Statement> stmt;
