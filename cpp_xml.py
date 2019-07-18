@@ -151,7 +151,7 @@ class ParseXml:
         return name + "Sql"
 
     def make_get_sql_func(self, item, param_name):
-        sql_func_content = "std::string " + self.get_sql_func_name(item.getAttribute("id"))
+        sql_func_content = "static std::string " + self.get_sql_func_name(item.getAttribute("id"))
         if (param_name):
             sql_func_content += " (const " + param_name + " &param)"
         else:
@@ -174,9 +174,9 @@ class ParseXml:
         # 返回值
         return_type = ""
         if result_name == "":
-            return_type = "int32_t"
+            return_type = "static int32_t"
         else:
-            return_type = "std::vector<%s>"%(result_name)
+            return_type = "static std::vector<%s>"%(result_name)
         self.make_result_func += return_type
 
         # 函数名
