@@ -181,7 +181,7 @@ class ParseXml:
 
         # 函数名
         sql_func_name = item.getAttribute("id")
-        sql_func_name += "ResultByName"
+        sql_func_name += "Result"
         self.make_result_func += " " + sql_func_name
 
         sql_handler_type = ""

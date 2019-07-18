@@ -49,11 +49,13 @@ CREATE TABLE `user_info` (
 </mapper>
 
 ```
-将其保存为```get_user.xml```
+将其保存为```get_user.xml```  
+
 2. 转cpp代码
 ```shell
 python cpp_xml.py get_user.xml #生成相应cpp代码
 ```
+生成的相应cpp代码中包含以下内容：  
 * 作为查询条件出入的参数类
 ```cpp
 struct GetUserInfoParam {
@@ -95,7 +97,7 @@ std::string GetUserInfoSql (const GetUserInfoParam &param) {
 * 执行sql并获取结果集
 ```cpp
 std::vector<GetUserInfoEntity> 
-GetUserInfoResultByName (ColumnLabelSqlHandler *sql_handler, const GetUserInfoParam &param) {
+GetUserInfoResult (ColumnLabelSqlHandler *sql_handler, const GetUserInfoParam &param) {
 	std::vector<GetUserInfoEntity> ret;
 	auto sql = GetUserInfoSql(param);
 	sql_handler->ExecuteQuery(sql);
