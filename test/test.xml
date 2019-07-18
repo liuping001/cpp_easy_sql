@@ -47,13 +47,13 @@
     </select>
 
     <!-- update -->
-    <UpdateUserInfoByIdParam>
+    <UpdateUserInfoByNameParam>
         <field name="passwd" type="string" ></field>
         <field name="state_id" type="int32"></field>
         <field name="name" type="string"></field>
-    </UpdateUserInfoByIdParam>
+    </UpdateUserInfoByNameParam>
 
-    <update id="UpdateUserInfoById" param_type="UpdateUserInfoByIdParam">
+    <update id="UpdateUserInfoByName" param_type="UpdateUserInfoByNameParam">
         update `user_info`
         set `user_id` = `user_id`
         <if test="!#{passwd}.empty()">

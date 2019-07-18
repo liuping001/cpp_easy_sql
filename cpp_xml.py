@@ -21,11 +21,20 @@ type_convert_sql_handler = {"int32":"Int", "uint32":"UInt",
                             "string":"String", "double":"Double",
                             "bool":"Boolean"}
 
-def make_struct(tag):
+def make_struct(tag, debug_str = False):
     str = "struct " + tag.nodeName + " {\n"
     for item in tag.getElementsByTagName("field"):
         str += "\t" + type_convert[item.getAttribute("type")] + " " + item.getAttribute("name") + ";\n"
+    if debug_str == True:
+        str += "\tstring DebugString() const {\n"
+        str += "\t\tstd::ostringstream ss;\n"
+        str += "\t\tss << \"%s {\";\n" %(tag.nodeName)
+        for item in tag.getElementsByTagName("field"):
+            str += "\t\tss << \" %s:\"<< %s;\n"%(item.getAttribute("name"), item.getAttribute("name"))
+        str += "\t\tss << \"}\";\n"
+        str += "\t\treturn ss.str();\n\t}\n"
     str += "};\n\n"
+
     return str
 
 def print_ss(str, head = "\t"):
@@ -174,14 +183,13 @@ class ParseXml:
         # 返回值
         return_type = ""
         if result_name == "":
-            return_type = "static int32_t"
+            return_type = "int32_t"
         else:
-            return_type = "static std::vector<%s>"%(result_name)
-        self.make_result_func += return_type
+            return_type = "std::vector<%s>"%(result_name)
+        self.make_result_func +="static " + return_type
 
         # 函数名
         sql_func_name = item.getAttribute("id")
-        sql_func_name += "Result"
         self.make_result_func += " " + sql_func_name
 
         sql_handler_type = ""
@@ -244,7 +252,7 @@ class ParseXml:
                 result_name = item.getAttribute("result_type")
                 result_type = self.root.getElementsByTagName(result_name)
                 if (len(result_type) == 1):
-                    self.result_class_sql += make_struct(result_type[0])
+                    self.result_class_sql += make_struct(result_type[0], True)
                 elif (len(result_type) == 0):
                     result_name = ""
 
