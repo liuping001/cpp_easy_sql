@@ -166,7 +166,10 @@ class ParseXml:
         sql_func_content += "}\n\n"
         self.make_sql_func += sql_func_content
 
-    def make_get_result_func_by_name(self, item, result_name, param_name):
+    '''
+    the_way: by label, by index
+    '''
+    def make_get_result_func(self, item, result_name, param_name, get_ret_way):
         self.make_result_func += "\n"
         # 返回值
         return_type = ""
@@ -181,12 +184,17 @@ class ParseXml:
         sql_func_name += "ResultByName"
         self.make_result_func += " " + sql_func_name
 
+        sql_handler_type = ""
+        if get_ret_way == "by_label":
+            sql_handler_type = "ColumnLabelSqlHandler"
+        elif get_ret_way == "by_index":
+            sql_handler_type = "ColumnIndexSqlHandler"
+
         # 参数值
         if param_name == "":
-            self.make_result_func += " (ColumnIndexSqlHandler *sql_handler)"
+            self.make_result_func += " (%s *sql_handler) {\n"%(sql_handler_type)
         else:
-            self.make_result_func += " (ColumnIndexSqlHandler *sql_handler, const " + param_name + " &param)"
-        self.make_result_func += " {\n"
+            self.make_result_func += " (%s *sql_handler, const %s &param) {\n"%(sql_handler_type, param_name)
 
         head = "\t"
         #定义返回值
@@ -207,9 +215,16 @@ class ParseXml:
         self.make_result_func += head + "while(sql_handler->Next()) {\n"
         self.make_result_func += head + "\tret.emplace_back();\n"
         tag = self.root.getElementsByTagName(result_name)[0]
-        for item in tag.getElementsByTagName("field"):
-            self.make_result_func += "\t\tret.back().%s = sql_handler->Get%s(\"%s\");\n"%(item.getAttribute("name"),
-                                     type_convert_sql_handler[item.getAttribute("type")], item.getAttribute("name"))
+        fields = tag.getElementsByTagName("field")
+        for i in range(0, len(fields)):
+            if get_ret_way == "by_label":
+                self.make_result_func += "\t\tret.back().%s = sql_handler->Get%s(\"%s\");\n"%(
+                    fields[i].getAttribute("name"), type_convert_sql_handler[fields[i].getAttribute("type")],
+                    fields[i].getAttribute("name"))
+            elif get_ret_way == "by_index":
+                self.make_result_func += "\t\tret.back().%s = sql_handler->Get%s(%d);\n"%(
+                    fields[i].getAttribute("name"), type_convert_sql_handler[fields[i].getAttribute("type")], i + 1)
+                pass
         self.make_result_func += head +"}\n"
         self.make_result_func += head + "return ret;\n}\n"
 
@@ -237,7 +252,8 @@ class ParseXml:
                 self.make_get_sql_func(item, param_name)
 
                 # 生成执行函数（输入结构体，返回结果结构体）
-                self.make_get_result_func_by_name(item, result_name, param_name)
+                self.make_get_result_func(item, result_name, param_name, "by_label")
+                self.make_get_result_func(item, result_name, param_name, "by_index")
 def main():
     for arg in sys.argv[1:]:
         print "process begin : " + arg

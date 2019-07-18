@@ -31,7 +31,7 @@ struct CppSql : public ColumnLabelSqlHandler {
 
     virtual bool GetBoolean(const std::string& column_label) const { return res->getBoolean(column_label); }
 
-    virtual long double GetDouble(const std::string& column_label) const { res->getDouble(column_label); }
+    virtual long double GetDouble(const std::string& column_label) const { return res->getDouble(column_label); }
 
     virtual int32_t GetInt(const std::string& column_label) const {return res->getInt(column_label);}
 
