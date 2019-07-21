@@ -40,76 +40,96 @@ def make_struct(tag, debug_str = False):
 def print_ss(str, head = "\t"):
     return head + "ss << \" " + str + "\";\n"
 
-def print_one_value(str):
-    return "\'\" + to_string(" + str + ") + \"\'"
-
 def print_value(str):
     return "\'\" + to_string(" + str + ") + \"\'"
 
-class PreFix:
-    def prefix_str(self, matched):
-        value = matched.group('value')
-        return print_value(self.prefix + value[2:len(value)-1])
-
-    def replace_field(self, data, prefix):
-        self.prefix = prefix
-        return (re.sub('(?P<value>#{[0-9a-zA-Z_]{1,}})', self.prefix_str, data))
-def re_prefix(data, prefix):
-    return PreFix().replace_field(data, prefix)
+def print_string_field(str):
+    return "\'\" + sql_handler->EscapeString(" + str + ") + \"\'"
+###################################################解析标签内容 begin ##############################################
 
 class PreFixCppField:
+    def __init__(self, data, prefix, field_type, in_condation):
+        self.data = data
+        self.prefix = prefix
+        self.in_condation = in_condation
+        self.field_type = field_type
+
     def prefix_str(self, matched):
         value = matched.group('value')
-        return self.prefix + value[2:len(value)-1]
+        field_name = value[2:len(value) - 1]
+        if self.field_type[field_name].find("string") >= 0 and self.in_condation == False:
+            return print_string_field(self.prefix + field_name)
+        if self.in_condation == True:
+            return self.prefix + field_name
+        elif self.in_condation == False:
+            return print_value(self.prefix + field_name)
 
-    def replace_field(self, data, prefix):
-        self.prefix = prefix
-        return (re.sub('(?P<value>#{[0-9a-zA-Z_]{1,}})', self.prefix_str, data))
-def re_prefix_cpp_field(data, prefix):
-    return PreFixCppField().replace_field(data, prefix)
+    def replace_field(self):
+        return re.sub('(?P<value>#{[0-9a-zA-Z_]{1,}})', self.prefix_str, self.data)
 
-def deal_text_to_sql(data, field_prefix, head = ""):
-    str = ""
-    t = data.split("\n") # 每一行处理成一行
-    for item in t:
-        item = item.replace('\n', ' ')
-        item = re.sub(' +', ' ', item)
-        item = re_prefix(item, field_prefix)
-        if (item != "" and item.isspace() == False):
-            str += print_ss(item, head)
-    return str
+
+def re_prefix_cpp_field(data, prefix, field_type, in_condation = False):
+    replace_field = PreFixCppField(data, prefix, field_type, in_condation)
+    return replace_field.replace_field()
 
 # 解析具体标签 if、foreach、text
-def parse_condation(tag, level = 1):
-    head=""
-    for count in range(0, level):
-        head += "\t"
-    str = ""
-    if tag.nodeName == "if":
-        str += head + "if ("
-        str += re_prefix_cpp_field(tag.getAttribute("test"), "param.")
-        str += ") {\n"
-        for if_tag in tag.childNodes:
-            str += parse_condation(if_tag, level + 1)
-        str += head + "}\n"
-    elif tag.nodeName == "foreach":
-        collection = tag.getAttribute("collection")
-        collection = re_prefix_cpp_field(collection, "param.")
-        open = tag.getAttribute("open")
-        close = tag.getAttribute("close")
-        separator = tag.getAttribute("separator")
+class ParseContent:
+    def __init__(self, param_name, root):
+        self.field_prefix = "param."
+        self.feild_type = {}
+        self._get_feild_type(param_name, root)
 
-        str += print_ss(open, head)
-        str += head + "for (size_t i = 0; i < " + collection + ".size(); i++) {\n"
-        str += head + "\tif (i != 0) {" + print_ss(separator, "\n\t\t" + head) + head + "\t}\n"
-        str += print_ss(print_one_value(collection + "[i]"), head + "\t")
-        str += head + "}\n"
-        str += print_ss(close, head)
+    def _get_feild_type(self, param_name, root):
+        if param_name != "":
+            param_type = root.getElementsByTagName(param_name)
+            if param_type == None:
+                return
+            for item in param_type[0].getElementsByTagName("field"):
+                self.feild_type[item.getAttribute("name")] = item.getAttribute("type")
 
-    elif tag.nodeType == 3:
-        if (tag.data != "" and tag.data.isspace() == False):
-            str += deal_text_to_sql(tag.data, "param.", head)
-    return str
+    def parse_condation(self, tag, level = 1):
+        head=""
+        for count in range(0, level):
+            head += "\t"
+        str = ""
+        if tag.nodeName == "if":
+            str += head + "if ("
+            str += re_prefix_cpp_field(tag.getAttribute("test"), self.field_prefix, self.feild_type, True)
+            str += ") {\n"
+            for if_tag in tag.childNodes:
+                str += self.parse_condation(if_tag, level + 1)
+            str += head + "}\n"
+        elif tag.nodeName == "foreach":
+            collection = tag.getAttribute("collection")
+            field_at_for = re_prefix_cpp_field(collection, self.field_prefix, self.feild_type, True)
+            field_in_for = re_prefix_cpp_field(collection, self.field_prefix, self.feild_type, False)
+            open = tag.getAttribute("open")
+            close = tag.getAttribute("close")
+            separator = tag.getAttribute("separator")
+
+            str += print_ss(open, head)
+            str += head + "for (size_t i = 0; i < " + field_at_for + ".size(); i++) {\n"
+            str += head + "\tif (i != 0) {" + print_ss(separator, "\n\t\t" + head) + head + "\t}\n"
+            str += print_ss(field_in_for, head + "\t")
+            str += head + "}\n"
+            str += print_ss(close, head)
+
+        elif tag.nodeType == 3:
+            if (tag.data != "" and tag.data.isspace() == False):
+                str += self.deal_text_to_sql(tag.data, head)
+        return str
+
+    def deal_text_to_sql(self, data, head = ""):
+        str = ""
+        t = data.split("\n") # 每一行处理成一行
+        for item in t:
+            item = item.replace('\n', ' ')
+            item = re.sub(' +', ' ', item)
+            item = re_prefix_cpp_field(item, self.field_prefix, self.feild_type)
+            if (item != "" and item.isspace() == False):
+                str += print_ss(item, head)
+        return str
+####################################################解析标签内容 end ###############################################
 
 def cpp_header_include(include, open="<", close=">"):
     return "#include %s%s%s\n"%(open, include, close)
@@ -153,16 +173,16 @@ class ParseXml:
         self.include_header_string += cpp_header_include("vector")
         self.include_header_string += cpp_header_include("sql_handler.h", "\"", "\"")
         self.include_header_string += cpp_using_namespace("std")
-        # string to_string
-        self.include_header_string += "inline std::string to_string(const std::string &s) {  return s; }\n"
 
     def get_sql_func_name(self, name):
         return name + "Sql"
 
     def make_get_sql_func(self, item, param_name):
+        parse_content = ParseContent(param_name, self.root)
+
         sql_func_content = "static std::string " + self.get_sql_func_name(item.getAttribute("id"))
         if (param_name):
-            sql_func_content += " (const " + param_name + " &param)"
+            sql_func_content += " (CommonSqlHandler *sql_handler, const " + param_name + " &param)"
         else:
             sql_func_content +="()"
         sql_func_content += " {\n"
@@ -170,7 +190,7 @@ class ParseXml:
         sql_func_content += "\t"
         sql_func_content += "ostringstream ss;\n"
         for item_sql in item.childNodes:
-            sql_func_content += parse_condation(item_sql)
+            sql_func_content += parse_content.parse_condation(item_sql)
         sql_func_content += "\treturn ss.str();\n"
         sql_func_content += "}\n\n"
         self.make_sql_func += sql_func_content
