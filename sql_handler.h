@@ -9,7 +9,8 @@ struct CommonSqlHandler {
     virtual size_t      GetRow() = 0;
     virtual std::string EscapeString(const std::string &str) { return str; };
     ~CommonSqlHandler () {}
-}
+};
+
 // 需要实现的接口
 struct ColumnIndexSqlHandler : public CommonSqlHandler {
     virtual bool        GetBoolean(uint32_t column_index) const = 0;

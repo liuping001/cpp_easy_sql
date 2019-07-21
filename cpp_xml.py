@@ -57,8 +57,10 @@ class PreFixCppField:
     def prefix_str(self, matched):
         value = matched.group('value')
         field_name = value[2:len(value) - 1]
-        if self.field_type[field_name].find("string") >= 0 and self.in_condation == False:
+        if self.field_type[field_name].strip() == "string" and self.in_condation == False:
             return print_string_field(self.prefix + field_name)
+        if self.field_type[field_name].strip() == "array[string]" and self.in_condation == False:
+            return print_string_field(self.prefix + field_name + "[i]")
         if self.in_condation == True:
             return self.prefix + field_name
         elif self.in_condation == False:
@@ -229,7 +231,7 @@ class ParseXml:
         if result_name != "":
             self.make_result_func += head + return_type + " ret;\n"
         #获取sql
-        self.make_result_func += head + "auto sql = " + self.get_sql_func_name(item.getAttribute("id")) + "(param);\n"
+        self.make_result_func += head + "auto sql = " + self.get_sql_func_name(item.getAttribute("id")) + "(sql_handler, param);\n"
         #执行sql
         if result_name == "":
             pass

@@ -24,7 +24,13 @@ struct CppSql : public ColumnLabelSqlHandler {
     virtual int32_t ExecuteUpdate(const std::string &sql) {
         return stmt->executeUpdate(sql);
     }
-    virtual bool Next() { return res->next(); }
+    virtual bool Next() {
+        auto b = res->next();
+        if (!b) {
+            res.release();
+        }
+        return b;
+    }
 
     virtual size_t GetFetchSize() { return res->getFetchSize(); }
     virtual size_t GetRow() { return res->rowsCount(); }

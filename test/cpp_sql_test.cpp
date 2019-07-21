@@ -12,7 +12,7 @@ int main(void)
         sql::Driver *driver;
 
         driver = get_driver_instance();
-        std::unique_ptr<sql::Connection> con(driver->connect("tcp://192.168.101.200:3306", "user00", "Iron@vgo"));
+        std::unique_ptr<sql::Connection> con(driver->connect("tcp://127.0.0.1:3306", "root", ""));
         con->setSchema("test");
         CppSql cpp_sql;
         auto stmt = con->createStatement();
