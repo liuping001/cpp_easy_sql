@@ -86,30 +86,31 @@ struct GetUserInfoEntity {
 
 * 根据查询条件类拼sql的函数
 ```cpp
-std::string GetUserInfoSql (const GetUserInfoParam &param) {
+std::string GetUserInfoSql (CommonSqlHandler *sql_handler, const GetUserInfoParam &param) {
 	ostringstream ss;
 	ss << "  select `user_id`,`name`,`passwd`,`state_id`";
 	ss << "  from `user_info`";
 	ss << "  where 1 = 1";
 	if (!param.name.empty()) {
-		ss << "  and `name` = '" + to_string(param.name) + "'";
+		ss << "  and `name` = '" + sql_handler->EscapeString(param.name) + "'";
 	}
 	if (!param.passwd.empty()) {
-		ss << "  and `passwd` = '" + to_string(param.passwd) + "'";
+		ss << "  and `passwd` = '" + sql_handler->EscapeString(param.passwd) + "'";
 	}
 	if (param.state_id > 0) {
 		ss << "  and `state_id` = '" + to_string(param.state_id) + "'";
 	}
 	return ss.str();
 }
+
 ```
 
 * 执行sql并获取结果集
 ```cpp
-std::vector<GetUserInfoEntity> 
-GetUserInfoResult (ColumnLabelSqlHandler *sql_handler, const GetUserInfoParam &param) {
+std::vector<GetUserInfoEntity>
+GetUserInfo (ColumnLabelSqlHandler *sql_handler, const GetUserInfoParam &param) {
 	std::vector<GetUserInfoEntity> ret;
-	auto sql = GetUserInfoSql(param);
+	auto sql = GetUserInfoSql(sql_handler, param);
 	sql_handler->ExecuteQuery(sql);
 	while(sql_handler->Next()) {
 		ret.emplace_back();
