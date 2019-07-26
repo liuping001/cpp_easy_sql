@@ -7,7 +7,7 @@
 #include <memory>
 #include <string>
 #include "sql_handler.h"
-#include "mysql.h"
+#include "mysql/mysql.h"
 
 class CSql : public ColumnIndexSqlHandler {
     MYSQL &mysql_;

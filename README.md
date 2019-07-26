@@ -8,6 +8,8 @@ c++ operation database like mybatis
 * cpp_xml.py 将xml定义的sql语句转成c++代码
 * sql_handler.h 定义了两组执行sql、获取结果的接口。分别是ColumnIndexSqlHandler通过index获取结果、ColumnLabelSqlHandler通过字段名获取结果。
 * cpp_sql.h 利用mysql-connection-c++实现了ColumnLabelSqlHandler接口
+* c_sql 利用mysql-connection-c 实现了ColumnIndexSqlHandler接口
+
 ## 使用
 以查询下面这个user_info表为例：
 ```sql
@@ -121,5 +123,16 @@ GetUserInfo (ColumnLabelSqlHandler *sql_handler, const GetUserInfoParam &param) 
 	}
 	return ret;
 }
+```
+
+# 安装依赖
+### 安装mysql
+```shell
+yum install -y mariadb-server mariadb
+```
+### 安装mysql-connector-c++
+```shell
+wget https://dev.mysql.com/get/Downloads/Connector-C++/mysql-connector-c++-1.1.9-linux-el7-x86-64bit.rpm
+rpm -Uvh mysql-connector-c++-1.1.9-linux-el7-x86-64bit.rpm
 ```
 
