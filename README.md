@@ -1,5 +1,4 @@
-# cpp_easy_sql
-c++ operation database like mybatis
+
 ## cpp easy sql简介
 * 将sql语句与代码分离解耦，存放于xml配置文件中
 * 用逻辑标签控制SQL的拼接
@@ -9,6 +8,17 @@ c++ operation database like mybatis
 * sql_handler.h 定义了两组执行sql、获取结果的接口。分别是ColumnIndexSqlHandler通过index获取结果、ColumnLabelSqlHandler通过字段名获取结果。
 * cpp_sql.h 利用mysql-connection-c++实现了ColumnLabelSqlHandler接口
 * c_sql 利用mysql-connection-c 实现了ColumnIndexSqlHandler接口
+
+## 安装依赖
+#### 安装mysql
+```shell
+yum install -y mariadb-server mariadb
+```
+#### 安装mysql-connector-c++
+```shell
+wget https://dev.mysql.com/get/Downloads/Connector-C++/mysql-connector-c++-1.1.9-linux-el7-x86-64bit.rpm
+rpm -Uvh mysql-connector-c++-1.1.9-linux-el7-x86-64bit.rpm
+```
 
 ## 使用
 以查询下面这个user_info表为例：
@@ -123,16 +133,5 @@ GetUserInfo (ColumnLabelSqlHandler *sql_handler, const GetUserInfoParam &param) 
 	}
 	return ret;
 }
-```
-
-# 安装依赖
-### 安装mysql
-```shell
-yum install -y mariadb-server mariadb
-```
-### 安装mysql-connector-c++
-```shell
-wget https://dev.mysql.com/get/Downloads/Connector-C++/mysql-connector-c++-1.1.9-linux-el7-x86-64bit.rpm
-rpm -Uvh mysql-connector-c++-1.1.9-linux-el7-x86-64bit.rpm
 ```
 
