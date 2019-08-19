@@ -7,7 +7,7 @@
 * cpp_xml.py 将xml定义的sql语句转成c++代码
 * sql_handler.h 定义了两组执行sql、获取结果的接口。分别是ColumnIndexSqlHandler通过index获取结果、ColumnLabelSqlHandler通过字段名获取结果。
 * cpp_sql.h 利用mysql-connection-c++实现了ColumnLabelSqlHandler接口
-* c_sql 利用mysql-connection-c 实现了ColumnIndexSqlHandler接口
+* c_sql.h 利用mysql-connection-c 实现了ColumnIndexSqlHandler接口
 
 ## 安装依赖
 #### 安装mysql
@@ -20,6 +20,40 @@ wget https://dev.mysql.com/get/Downloads/Connector-C++/mysql-connector-c++-1.1.9
 rpm -Uvh mysql-connector-c++-1.1.9-linux-el7-x86-64bit.rpm
 ```
 
+## 支持的标签
+
+### 操作标签
+```
+<select id="方法名" param_type="传入参数对象" result_type="返回结果列表对象类型"></select>
+<update id="方法名" param_type="传入参数对象"> </update>
+<insert id="方法名" param_type="传入参数对象"> </insert>
+<delete id="方法名" param_type="传入参数对象"> </delete>
+```
+
+### 条件标签
+```
+// #{} 形式的变量将会替换
+<if test="!#{passwd}.empty()">
+    and `passwd` = #{passwd}
+</if>
+```
+
+### 循环标签foreach
+foreach标签支持4个属性
+```
+<foreach collection="#{name}" open="(" close =")" separator=","></foreach>
+```
+例：
+``` 
+<select id="GetUserInfoByName" param_type="GetUserInfoByNameParam" result_type="GetUserInfoByNameResult">
+    <if test="#{name}.size() > 0">
+        select `user_id`,`name`,`passwd`,`state_id`
+        from `user_info`
+        where `name` in
+        <foreach collection="#{name}" open="(" close =")" separator=","></foreach>
+    </if>
+</select>
+```
 ## 使用
 以查询下面这个user_info表为例：
 ```sql
