@@ -146,6 +146,7 @@ class ParseXml:
         self.make_sql_func = ""
         self.make_result_func = ""
         self.include_header_string = ""
+        self.generated_struct = set()
         self.dom = xml.dom.minidom.parse(xml_file)
         self.root = self.dom.documentElement
         self.get_namespace()
@@ -266,7 +267,9 @@ class ParseXml:
                 param_name = item.getAttribute("param_type")
                 param_type = self.root.getElementsByTagName(param_name)
                 if (len(param_type) == 1):
-                    self.param_class_sql += make_struct(param_type[0])
+                    if(param_type[0].nodeName not in self.generated_struct):
+                        self.generated_struct.add(param_type[0].nodeName)
+                        self.param_class_sql += make_struct(param_type[0])
                 elif (len(param_type) == 0):
                     param_name = ""
 
@@ -274,7 +277,9 @@ class ParseXml:
                 result_name = item.getAttribute("result_type")
                 result_type = self.root.getElementsByTagName(result_name)
                 if (len(result_type) == 1):
-                    self.result_class_sql += make_struct(result_type[0], True)
+                    if(result_type[0].nodeName not in self.generated_struct):
+                        self.generated_struct.add(result_type[0].nodeName)
+                        self.param_class_sql += make_struct(result_type[0])
                 elif (len(result_type) == 0):
                     result_name = ""
 
